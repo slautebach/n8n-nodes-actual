@@ -1271,14 +1271,59 @@ export class ActualBudget implements INodeType {
 					const schedules = await api.getSchedules();
 					return schedules.map((schedule) => ({
 						name: schedule.id, // Schedules don't have a name, using ID for now
-						value: schedule.id,
-					}));
-				} catch (error) {
-					throw new NodeApiError(this.getNode(), { message: (error as Error).message });
-				} finally {
-					await ActualBudget.shutdownApiClient.call(this);
-				}
-			},
-		},
-	};
-}
+											value: schedule.id,
+										}));
+									} catch (error) {
+										throw new NodeApiError(this.getNode(), { message: (error as Error).message });
+									} finally {
+										await ActualBudget.shutdownApiClient.call(this);
+									}
+								},
+							},
+						};
+						
+						async execute(this: IExecuteFunctions): Promise<any> {
+							const items = this.getInputData();
+							const returnData = [];
+						
+							for (let i = 0; i < items.length; i++) {
+								const resource = this.getNodeParameter('resource', i) as string;
+								const operation = this.getNodeParameter('operation', i) as string;
+						
+								await ActualBudget.initApiClient.call(this);
+						
+								try {
+									let result: any;
+						
+									switch (resource) {
+										case 'account':
+											switch (operation) {
+												case 'getAll':
+													result = await api.getAccounts();
+													break;
+												// Add other account operations here
+												default:
+													throw new NodeApiError(this.getNode(), { message: `Unknown operation ${operation} for resource ${resource}` });
+											}
+											break;
+										// Add other resource cases here
+										default:
+											throw new NodeApiError(this.getNode(), { message: `Unknown resource ${resource}` });
+									}
+						
+									returnData.push({ json: { data: result } });
+								} catch (error) { {
+										if (this.continueOnFail()) {
+											returnData.push({ json: { error: (error as Error).message } });
+											continue;
+										}
+										throw error;
+									}
+								} finally {
+									await ActualBudget.shutdownApiClient.call(this);
+								}
+							}
+						
+							return [this.helpers.returnJsonArray(returnData)];
+						}
+						}
