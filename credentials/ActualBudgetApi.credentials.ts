@@ -32,7 +32,7 @@ export class ActualBudgetApi implements ICredentialType {
 			body: {
 				loginMethod: 'password',
 				password: '={{$credentials?.password}}',
-			}
-		}
+			},
+		},
 	};
 }

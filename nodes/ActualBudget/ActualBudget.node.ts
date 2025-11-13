@@ -1347,6 +1347,56 @@ export class ActualBudget implements INodeType {
 								});
 						}
 						break;
+					case 'budget':
+						switch (operation) {
+							case 'getMonths':
+								result = await api.getBudgetMonths();
+								break;
+							case 'getMonth':
+								const month = this.getNodeParameter('month', i) as string;
+								result = await api.getBudgetMonth(month);
+								break;
+							case 'setAmount':
+								const monthForAmount = this.getNodeParameter('month', i) as string;
+								const categoryIdForAmount = this.getNodeParameter('categoryId', i) as string;
+								const amount = this.getNodeParameter('amount', i) as number;
+								await api.setBudgetAmount(monthForAmount, categoryIdForAmount, amount);
+								result = { success: true };
+								break;
+							case 'setCarryover':
+								const monthForCarryover = this.getNodeParameter('month', i) as string;
+								const categoryIdForCarryover = this.getNodeParameter('categoryId', i) as string;
+								const carryover = this.getNodeParameter('carryover', i) as boolean;
+								await api.setBudgetCarryover(monthForCarryover, categoryIdForCarryover, carryover);
+								result = { success: true };
+								break;
+							case 'holdForNextMonth':
+								const monthForHold = this.getNodeParameter('month', i) as string;
+								const categoryIdForHold = this.getNodeParameter('categoryId', i) as string;
+								await api.setBudgetCarryover(monthForHold, categoryIdForHold, true);
+								result = { success: true };
+								break;
+							case 'resetHold':
+								const monthForReset = this.getNodeParameter('month', i) as string;
+								const categoryIdForReset = this.getNodeParameter('categoryId', i) as string;
+								await api.setBudgetCarryover(monthForReset, categoryIdForReset, false);
+								result = { success: true };
+								break;
+							case 'batchUpdates':
+								const updates = this.getNodeParameter('updates', i) as any[];
+								await api.batchBudgetUpdates({
+									added: updates.filter((u) => u.type === 'add'),
+									deleted: updates.filter((u) => u.type === 'delete'),
+									updated: updates.filter((u) => u.type === 'update'),
+								});
+								result = { success: true };
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
 					// Add other resource cases here
 					default:
 						throw new NodeApiError(this.getNode(), { message: `Unknown resource ${resource}` });
