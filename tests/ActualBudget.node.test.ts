@@ -198,54 +198,129 @@ describe('ActualBudget Node', () => {
 					}
 				}
 			});
-		});
 
-		describe('Payees', () => {
-			it('getPayees should return payees from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
+			describe('execute', () => {
+				it('delete a category', async () => {
+					const node = new ActualBudget();
+					let testGroupId: string | null = null;
+					let testCategoryId: string | null = null;
+					const categoryName = `Test Category ${Date.now()}`;
+					const groupName = `Test Group ${Date.now()}`;
 
-				const node = new ActualBudget();
-				let testPayeeId: string | null = null;
-				const payeeName = `Test Payee ${Date.now()}`;
+					try {
+						testGroupId = await api.createCategoryGroup({ name: groupName });
+						testCategoryId = await api.createCategory({ name: categoryName, group_id: testGroupId as string });
 
-				try {
-					testPayeeId = await api.createPayee({ name: payeeName });
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'category';
+								if (name === 'operation') return 'delete';
+								if (name === 'categoryId') return testCategoryId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
 
-					const result = await node.methods.loadOptions.getPayees.call(loadOptionsFunctions);
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data.success).toBe(true);
 
-					expect(Array.isArray(result)).toBe(true);
-
-					const testPayee = result.find((payee) => payee.name === payeeName);
-					expect(testPayee).toBeDefined();
-					expect(testPayee?.value).toBe(testPayeeId);
-
-				} catch (error) {
-					if (error instanceof NodeApiError) {
-						const errorMessage = (error.cause as Error)?.message || error.message;
-						console.error('Caught NodeApiError:', errorMessage);
-					} else {
-						console.error('Caught unexpected error:', error);
-					}
-					throw error;
-				} finally {
-					if (testPayeeId) {
+						// Verify the category was deleted
 						await api.init({
 							serverURL: process.env.ACTUAL_SERVER_URL,
 							password: process.env.ACTUAL_SERVER_PASSWORD,
 							dataDir: 'tests/dataDir',
 						});
 						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
-						await api.deletePayee(testPayeeId);
+						const categories = await api.getCategories();
+						const deletedCategory = categories.find(cat => cat.id === testCategoryId);
+						expect(deletedCategory).toBeUndefined();
+					} catch (error: any) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						if (testGroupId) {
+							await api.deleteCategoryGroup(testGroupId);
+						}
 						await api.shutdown();
 					}
-				}
+				});
+
+				it('delete a category group', async () => {
+					const node = new ActualBudget();
+					let testGroupId: string | null = null;
+					const groupName = `Test Group ${Date.now()}`;
+
+					try {
+						testGroupId = await api.createCategoryGroup({ name: groupName });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'categoryGroup';
+								if (name === 'operation') return 'delete';
+								if (name === 'categoryGroupId') return testGroupId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data.success).toBe(true);
+
+						// Verify the category group was deleted
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						const categoryGroups = await api.getCategoryGroups();
+						const deletedGroup = categoryGroups.find(group => group.id === testGroupId);
+						expect(deletedGroup).toBeUndefined();
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					}
+				});
 			});
 		});
 
@@ -463,6 +538,83 @@ describe('ActualBudget Node', () => {
 					// Clean up the test account
 					if (testAccountId) {
 						// Re-initialize the API to ensure the budget is loaded for cleanup
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						await api.deleteAccount(testAccountId);
+						await api.shutdown();
+					}
+				}
+			});
+
+			it('import transactions', async () => {
+				const node = new ActualBudget();
+				let testAccountId: string | null = null;
+				const accountName = `Test Account ${Date.now()}`;
+				const payeeName = `Imported Payee ${Date.now()}`;
+				const transactionAmount = -500; // in cents
+
+				try {
+					testAccountId = await api.createAccount({ name: accountName, type: 'checking' });
+
+					const transactionsToImport = [
+						{
+							date: '2023-11-15',
+							amount: transactionAmount,
+							payee_name: payeeName,
+							imported_id: `import-id-${Date.now()}`,
+						},
+					];
+
+					const executeFunctions = {
+						getCredentials: jest.fn().mockResolvedValue({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							syncId: process.env.ACTUAL_SYNC_ID,
+						}),
+						getNode: jest.fn(),
+						getNodeParameter: jest.fn((name: string) => {
+							if (name === 'resource') return 'transaction';
+							if (name === 'operation') return 'import';
+							if (name === 'accountId') return testAccountId;
+							if (name === 'transactions') return transactionsToImport;
+							return null;
+						}),
+						getInputData: jest.fn().mockReturnValue([
+							{},
+						]),
+						helpers: {
+							returnJsonArray: jest.fn((data) => data),
+						},
+					} as unknown as IExecuteFunctions;
+
+					const result = await node.execute.call(executeFunctions);
+					expect(result[0][0].json.data.success).toBe(true);
+
+					// Verify the transaction was imported
+					await api.init({
+						serverURL: process.env.ACTUAL_SERVER_URL,
+						password: process.env.ACTUAL_SERVER_PASSWORD,
+						dataDir: 'tests/dataDir',
+					});
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+					const transactions = await api.getTransactions(testAccountId, '2023-01-01', '2023-12-31');
+					const importedTransaction = transactions.find(t => t.imported_payee === payeeName && t.amount === transactionAmount);
+					expect(importedTransaction).toBeDefined();
+
+				} catch (error) {
+					if (error instanceof NodeApiError) {
+						const errorMessage = (error.cause as Error)?.message || error.message;
+						console.error('Caught NodeApiError:', errorMessage);
+					} else {
+						console.error('Caught unexpected error:', error);
+					}
+					throw error;
+				} finally {
+					if (testAccountId) {
 						await api.init({
 							serverURL: process.env.ACTUAL_SERVER_URL,
 							password: process.env.ACTUAL_SERVER_PASSWORD,

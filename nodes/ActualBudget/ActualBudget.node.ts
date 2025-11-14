@@ -1400,7 +1400,6 @@ export class ActualBudget implements INodeType {
 		const items = this.getInputData();
 		const returnData = [];
 
-
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', i) as string;
 			const operation = this.getNodeParameter('operation', i) as string;
@@ -1464,11 +1463,13 @@ export class ActualBudget implements INodeType {
 							case 'getBalance':
 								const accountIdForBalance = this.getNodeParameter('accountId', i) as string;
 								const accounts = await api.getAccounts();
-								const account = accounts.find(a => a.id === accountIdForBalance);
+								const account = accounts.find((a) => a.id === accountIdForBalance);
 								if (account) {
 									result = { balance: account.balance };
 								} else {
-									throw new NodeApiError(this.getNode(), { message: `Account with ID ${accountIdForBalance} not found` });
+									throw new NodeApiError(this.getNode(), {
+										message: `Account with ID ${accountIdForBalance} not found`,
+									});
 								}
 								break;
 							default:
@@ -1566,6 +1567,32 @@ export class ActualBudget implements INodeType {
 							case 'delete':
 								const transactionIdForDelete = this.getNodeParameter('transactionId', i) as string;
 								await api.deleteTransaction(transactionIdForDelete);
+								result = { success: true };
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
+					case 'category':
+						switch (operation) {
+							case 'delete':
+								const categoryIdForDelete = this.getNodeParameter('categoryId', i) as string;
+								await api.deleteCategory(categoryIdForDelete);
+								result = { success: true };
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
+					case 'categoryGroup':
+						switch (operation) {
+							case 'delete':
+								const categoryGroupIdForDelete = this.getNodeParameter('categoryGroupId', i) as string;
+								await api.deleteCategoryGroup(categoryGroupIdForDelete);
 								result = { success: true };
 								break;
 							default:
