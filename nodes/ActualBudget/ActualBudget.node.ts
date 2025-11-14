@@ -1291,6 +1291,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of account options.
 			 */
 			async getAccounts(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1306,6 +1307,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching accounts: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 			/**
@@ -1313,6 +1316,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of category options.
 			 */
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1328,6 +1332,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching categories: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 			/**
@@ -1335,6 +1341,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of category group options.
 			 */
 			async getCategoryGroups(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1350,6 +1357,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching category groups: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 			/**
@@ -1357,6 +1366,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of payee options.
 			 */
 			async getPayees(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1372,6 +1382,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching payees: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 			/**
@@ -1379,6 +1391,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of rule options.
 			 */
 			async getRules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1394,6 +1407,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching rules: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 			/**
@@ -1401,6 +1416,7 @@ export class ActualBudget implements INodeType {
 			 * @returns A promise that resolves to an array of schedule options.
 			 */
 			async getSchedules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				if (syncId) {
@@ -1416,6 +1432,8 @@ export class ActualBudget implements INodeType {
 					throw new NodeApiError(this.getNode(), {
 						message: `Error fetching schedules: ${(error as Error).message}`,
 					});
+				} finally {
+					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
 		},
