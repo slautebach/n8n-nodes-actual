@@ -1242,10 +1242,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const accounts = await api.getAccounts();
 					return accounts.map((account) => ({
 						name: account.name,
@@ -1268,10 +1268,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const categories = await api.getCategories();
 					return categories.map((category) => ({
 						name: category.name,
@@ -1294,10 +1294,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const categoryGroups = await api.getCategoryGroups();
 					return categoryGroups.map((categoryGroup) => ({
 						name: categoryGroup.name,
@@ -1320,10 +1320,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const payees = await api.getPayees();
 					return payees.map((payee) => ({
 						name: payee.name,
@@ -1346,10 +1346,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const rules = await api.getRules();
 					return rules.map((rule) => ({
 						name: rule.id, // Rules don't have a name, using ID for now
@@ -1372,10 +1372,10 @@ export class ActualBudget implements INodeType {
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
 				await ActualBudget.initApiClient.call(this);
-				if (syncId) {
-					await api.downloadBudget(syncId);
-				}
 				try {
+					if (syncId && syncId !== '') {
+						await api.downloadBudget(syncId);
+					}
 					const schedules = await api.getSchedules();
 					return schedules.map((schedule) => ({
 						name: schedule.id, // Schedules don't have a name, using ID for now
@@ -1766,12 +1766,12 @@ export class ActualBudget implements INodeType {
 								break;
 							case 'runBankSync':
 								const accountIdForBankSync = this.getNodeParameter('accountId', i) as string;
-								await api.runBankSync(accountIdForBankSync);
+								await api.runBankSync({ accountId: accountIdForBankSync });
 								result = { success: true };
 								break;
 							case 'runQuery':
 								const queryToRun = this.getNodeParameter('query', i) as string;
-								result = await api.query(queryToRun);
+								result = await api.runQuery(queryToRun);
 								break;
 							case 'getIdByName':
 								const entityType = this.getNodeParameter('type', i) as string;
