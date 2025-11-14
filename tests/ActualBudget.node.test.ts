@@ -11,11 +11,37 @@ import * as fs from 'fs';
 // ACTUAL_SERVER_PASSWORD=your-password
 // ACTUAL_SYNC_ID=your-budget-id
 
+const createLoadOptionsFunctions = () => ({
+	getCredentials: jest.fn().mockResolvedValue({
+		serverURL: process.env.ACTUAL_SERVER_URL,
+		password: process.env.ACTUAL_SERVER_PASSWORD,
+		syncId: process.env.ACTUAL_SYNC_ID,
+	}),
+	getNode: jest.fn(),
+} as unknown as ILoadOptionsFunctions);
+
+const createExecuteFunctions = (parameters: { [key: string]: any }) => ({
+	getCredentials: jest.fn().mockResolvedValue({
+		serverURL: process.env.ACTUAL_SERVER_URL,
+		password: process.env.ACTUAL_SERVER_PASSWORD,
+		syncId: process.env.ACTUAL_SYNC_ID,
+	}),
+	getNode: jest.fn(),
+	getNodeParameter: jest.fn((name: string) => parameters[name]),
+	getInputData: jest.fn().mockReturnValue([
+		{},
+	]),
+	helpers: {
+		returnJsonArray: jest.fn((data) => data),
+	},
+} as unknown as IExecuteFunctions);
+
 describe('ActualBudget Node', () => {
 	it('should have a description', () => {
 		const node = new ActualBudget();
 		expect(node.description).toBeDefined();
 	});
+
 
 	describe('loadOptions', () => {
 		describe('Integration Tests', () => {
@@ -44,15 +70,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getAccounts should return accounts from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
-
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 				const node = new ActualBudget();
 				let testAccountId: string | null = null;
 				const accountName = `Test Account ${Date.now()}`;
@@ -95,15 +113,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getCategories should return categories from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
-
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 				const node = new ActualBudget();
 				let testGroupId: string | null = null;
 				let testCategoryId: string | null = null;
@@ -150,15 +160,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getCategoryGroups should return category groups from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
-
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 				const node = new ActualBudget();
 				let testGroupId: string | null = null;
 				const groupName = `Test Group ${Date.now()}`;
@@ -197,15 +199,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getPayees should return payees from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
-
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 				const node = new ActualBudget();
 				let testPayeeId: string | null = null;
 				const payeeName = `Test Payee ${Date.now()}`;
@@ -244,15 +238,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getRules should return rules from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
-
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 				const node = new ActualBudget();
 				let testRuleId: string | null = null;
 				let testPayeeId: string | null = null;
@@ -320,14 +306,7 @@ describe('ActualBudget Node', () => {
 			});
 
 			it('getSchedules should return schedules from a live server', async () => {
-				const loadOptionsFunctions = {
-					getCredentials: jest.fn().mockResolvedValue({
-						serverURL: process.env.ACTUAL_SERVER_URL,
-						password: process.env.ACTUAL_SERVER_PASSWORD,
-						syncId: process.env.ACTUAL_SYNC_ID,
-					}),
-					getNode: jest.fn(),
-				} as unknown as ILoadOptionsFunctions;
+				const loadOptionsFunctions = createLoadOptionsFunctions();
 
 				const node = new ActualBudget();
 				let testScheduleId: string | null = null;
@@ -421,47 +400,28 @@ describe('ActualBudget Node', () => {
 				let testAccountId: string | null = null;
 
 				try {
-					// Create a test account to ensure we have one to test against
 					const accountName = `Test Account ${Date.now()}`;
 					testAccountId = await api.createAccount({ name: accountName, type: 'checking' });
 
-					// Add a transaction to the test account
 					await api.addTransactions(testAccountId, [
 						{
 							date: '2023-10-26',
-							amount: -5000, // in cents
+							amount: -5000,
 							payee_name: 'Test Payee',
 						},
 					]);
 
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'transaction';
-							if (name === 'operation') return 'getAll';
-							if (name === 'accountId') return testAccountId;
-							if (name === 'startDate') return '2023-01-01';
-							if (name === 'endDate') return '2023-12-31';
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'transaction',
+						operation: 'getAll',
+						accountId: testAccountId,
+						startDate: '2023-01-01',
+						endDate: '2023-12-31',
+					});
 
 					const result = await node.execute.call(executeFunctions);
 
-					// We expect the result to be an array, and we can't know the exact content
 					expect(Array.isArray(result)).toBe(true);
-					// Optional: Check if the array is not empty, assuming the test server has transactions
 					if (result.length > 0) {
 						expect(result[0][0].json.data[0]).toHaveProperty('imported_payee', 'Test Payee');
 						expect(result[0][0].json.data[0]).toHaveProperty('amount', -5000);
@@ -475,9 +435,7 @@ describe('ActualBudget Node', () => {
 					}
 					throw error;
 				} finally {
-					// Clean up the test account
 					if (testAccountId) {
-						// Re-initialize the API to ensure the budget is loaded for cleanup
 						await api.init({
 							serverURL: process.env.ACTUAL_SERVER_URL,
 							password: process.env.ACTUAL_SERVER_PASSWORD,
@@ -524,25 +482,10 @@ describe('ActualBudget Node', () => {
 
 				it('should get all categories', async () => {
 					const node = new ActualBudget();
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'category';
-							if (name === 'operation') return 'getAll';
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'category',
+						operation: 'getAll',
+					});
 
 					const result = await node.execute.call(executeFunctions);
 					const categories = result[0][0].json.data;
@@ -554,27 +497,12 @@ describe('ActualBudget Node', () => {
 				it('should create a category', async () => {
 					const node = new ActualBudget();
 					const newCategoryName = `New Test Category ${Date.now()}`;
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'category';
-							if (name === 'operation') return 'create';
-							if (name === 'name') return newCategoryName;
-							if (name === 'categoryGroupId') return testGroupId;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'category',
+						operation: 'create',
+						name: newCategoryName,
+						categoryGroupId: testGroupId,
+					});
 
 					const result = await node.execute.call(executeFunctions);
 					const newCategoryId = result[0][0].json.data;
@@ -604,28 +532,13 @@ describe('ActualBudget Node', () => {
 				it('should update a category', async () => {
 					const node = new ActualBudget();
 					const updatedCategoryName = `Updated Test Category ${Date.now()}`;
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'category';
-							if (name === 'operation') return 'update';
-							if (name === 'categoryId') return testCategoryId;
-							if (name === 'name') return updatedCategoryName;
-							if (name === 'categoryGroupId') return testGroupId;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'category',
+						operation: 'update',
+						categoryId: testCategoryId,
+						name: updatedCategoryName,
+						categoryGroupId: testGroupId,
+					});
 
 					await node.execute.call(executeFunctions);
 
@@ -648,26 +561,11 @@ describe('ActualBudget Node', () => {
 
 				it('should delete a category', async () => {
 					const node = new ActualBudget();
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'category';
-							if (name === 'operation') return 'delete';
-							if (name === 'categoryId') return testCategoryId;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'category',
+						operation: 'delete',
+						categoryId: testCategoryId,
+					});
 
 					await node.execute.call(executeFunctions);
 
@@ -719,25 +617,10 @@ describe('ActualBudget Node', () => {
 
 				it('should get all category groups', async () => {
 					const node = new ActualBudget();
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'categoryGroup';
-							if (name === 'operation') return 'getAll';
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'categoryGroup',
+						operation: 'getAll',
+					});
 
 					const result = await node.execute.call(executeFunctions);
 					const groups = result[0][0].json.data;
@@ -749,26 +632,11 @@ describe('ActualBudget Node', () => {
 				it('should create a category group', async () => {
 					const node = new ActualBudget();
 					const newGroupName = `New Test Group ${Date.now()}`;
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'categoryGroup';
-							if (name === 'operation') return 'create';
-							if (name === 'name') return newGroupName;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'categoryGroup',
+						operation: 'create',
+						name: newGroupName,
+					});
 
 					const result = await node.execute.call(executeFunctions);
 					const newGroupId = result[0][0].json.data;
@@ -798,27 +666,12 @@ describe('ActualBudget Node', () => {
 				it('should update a category group', async () => {
 					const node = new ActualBudget();
 					const updatedGroupName = `Updated Test Group ${Date.now()}`;
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'categoryGroup';
-							if (name === 'operation') return 'update';
-							if (name === 'categoryGroupId') return testGroupId;
-							if (name === 'name') return updatedGroupName;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'categoryGroup',
+						operation: 'update',
+						categoryGroupId: testGroupId,
+						name: updatedGroupName,
+					});
 
 					await node.execute.call(executeFunctions);
 
@@ -841,26 +694,11 @@ describe('ActualBudget Node', () => {
 
 				it('should delete a category group', async () => {
 					const node = new ActualBudget();
-					const executeFunctions = {
-						getCredentials: jest.fn().mockResolvedValue({
-							serverURL: process.env.ACTUAL_SERVER_URL,
-							password: process.env.ACTUAL_SERVER_PASSWORD,
-							syncId: process.env.ACTUAL_SYNC_ID,
-						}),
-						getNode: jest.fn(),
-						getNodeParameter: jest.fn((name: string) => {
-							if (name === 'resource') return 'categoryGroup';
-							if (name === 'operation') return 'delete';
-							if (name === 'categoryGroupId') return testGroupId;
-							return null;
-						}),
-						getInputData: jest.fn().mockReturnValue([
-							{},
-						]),
-						helpers: {
-							returnJsonArray: jest.fn((data) => data),
-						},
-					} as unknown as IExecuteFunctions;
+					const executeFunctions = createExecuteFunctions({
+						resource: 'categoryGroup',
+						operation: 'delete',
+						categoryGroupId: testGroupId,
+					});
 
 					await node.execute.call(executeFunctions);
 

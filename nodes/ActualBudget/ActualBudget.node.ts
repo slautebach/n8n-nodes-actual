@@ -1533,7 +1533,9 @@ export class ActualBudget implements INodeType {
 						break;
 					// Add other resource cases here
 					default:
-						throw new NodeApiError(this.getNode(), { message: `Not implemented or unknown resource ${resource}` });
+						throw new NodeApiError(this.getNode(), {
+							message: `Not implemented or unknown resource ${resource}`,
+						});
 				}
 
 				returnData.push({ json: { data: result } });
