@@ -1686,6 +1686,8 @@ export class ActualBudget implements INodeType {
 					}
 					throw error;
 				}
+			} finally {
+				await ActualBudget.shutdownApiClient.call(this);
 			}
 		}
 
