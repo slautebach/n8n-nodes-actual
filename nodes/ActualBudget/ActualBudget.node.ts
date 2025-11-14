@@ -1732,6 +1732,84 @@ export class ActualBudget implements INodeType {
 								});
 						}
 						break;
+					case 'schedule':
+						switch (operation) {
+							case 'getAll':
+								result = await api.getSchedules();
+								break;
+							case 'create':
+								const scheduleDetailsForCreate = this.getNodeParameter('scheduleDetails', i) as any;
+								result = await api.createSchedule(scheduleDetailsForCreate);
+								break;
+							case 'update':
+								const scheduleIdForUpdate = this.getNodeParameter('scheduleId', i) as string;
+								const scheduleDetailsForUpdate = this.getNodeParameter('scheduleDetails', i) as any;
+								await api.updateSchedule(scheduleIdForUpdate, scheduleDetailsForUpdate);
+								result = { success: true };
+								break;
+							case 'delete':
+								const scheduleIdForDelete = this.getNodeParameter('scheduleId', i) as string;
+								await api.deleteSchedule(scheduleIdForDelete);
+								result = { success: true };
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
+					case 'utility':
+						switch (operation) {
+							case 'sync':
+								await api.sync();
+								result = { success: true };
+								break;
+							case 'runBankSync':
+								const accountIdForBankSync = this.getNodeParameter('accountId', i) as string;
+								await api.runBankSync(accountIdForBankSync);
+								result = { success: true };
+								break;
+							case 'runQuery':
+								const queryToRun = this.getNodeParameter('query', i) as string;
+								result = await api.query(queryToRun);
+								break;
+							case 'getIdByName':
+								const entityType = this.getNodeParameter('type', i) as string;
+								const entityName = this.getNodeParameter('name', i) as string;
+								let entities;
+								switch (entityType) {
+									case 'account':
+										entities = await api.getAccounts();
+										break;
+									case 'category':
+										entities = await api.getCategories();
+										break;
+									case 'categoryGroup':
+										entities = await api.getCategoryGroups();
+										break;
+									case 'payee':
+										entities = await api.getPayees();
+										break;
+									default:
+										throw new NodeApiError(this.getNode(), {
+											message: `Unknown entity type ${entityType} for getIdByName`,
+										});
+								}
+								const foundEntity = entities.find((entity: any) => entity.name === entityName);
+								if (foundEntity) {
+									result = { id: foundEntity.id };
+								} else {
+									throw new NodeApiError(this.getNode(), {
+										message: `${entityType} with name ${entityName} not found`,
+									});
+								}
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
 					// Add other resource cases here
 					default:
 						throw new NodeApiError(this.getNode(), { message: `Unknown resource ${resource}` });
