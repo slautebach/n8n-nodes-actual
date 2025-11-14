@@ -14,14 +14,7 @@ import {
 
 import * as api from '@actual-app/api';
 
-/**
- * Represents the Actual Budget node for n8n, allowing interaction with an Actual Budget instance.
- */
 export class ActualBudget implements INodeType {
-	/**
-	 * Initializes the Actual Budget API client with the provided credentials.
-	 * @param this - The context of the function, either IExecuteFunctions, ILoadOptionsFunctions, or IHookFunctions.
-	 */
 	static async initApiClient(this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions) {
 		const credentials = await this.getCredentials('actualBudgetApi');
 		if (credentials === undefined) {
@@ -56,10 +49,6 @@ export class ActualBudget implements INodeType {
 		}
 	}
 
-	/**
-	 * Shuts down the Actual Budget API client.
-	 * @param this - The context of the function, either IExecuteFunctions, ILoadOptionsFunctions, or IHookFunctions.
-	 */
 	static async shutdownApiClient(this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions) {
 		try {
 			await api.shutdown();
@@ -69,9 +58,6 @@ export class ActualBudget implements INodeType {
 		}
 	}
 
-	/**
-	 * Describes the properties and behavior of the Actual Budget node.
-	 */
 	description: INodeTypeDescription = {
 		displayName: 'Actual Budget',
 		name: 'actualBudget',
@@ -93,7 +79,6 @@ export class ActualBudget implements INodeType {
 		],
 
 		properties: [
-			// Resource selection
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -140,7 +125,6 @@ export class ActualBudget implements INodeType {
 				required: true,
 				noDataExpression: true,
 			},
-			// Account operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -178,11 +162,6 @@ export class ActualBudget implements INodeType {
 						action: 'Get many accounts',
 					},
 					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get an account',
-					},
-					{
 						name: 'Reopen',
 						value: 'reopen',
 						action: 'Reopen an account',
@@ -208,7 +187,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['account'],
-						operation: ['getBalance', 'update', 'close', 'reopen', 'delete', 'get'],
+						operation: ['getBalance', 'update', 'close', 'reopen', 'delete'],
 					},
 				},
 			},
@@ -315,7 +294,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Budget operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -444,7 +422,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Category operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -526,7 +503,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Category Group operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -591,7 +567,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Payee operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -617,11 +592,6 @@ export class ActualBudget implements INodeType {
 						name: 'Get Many',
 						value: 'getAll',
 						action: 'Get many payees',
-					},
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get a payee',
 					},
 					{
 						name: 'Get Rules',
@@ -654,7 +624,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['payee'],
-						operation: ['update', 'delete', 'merge', 'getRules', 'get'],
+						operation: ['update', 'delete', 'merge', 'getRules'],
 					},
 				},
 			},
@@ -705,7 +675,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Rule operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -721,11 +690,6 @@ export class ActualBudget implements INodeType {
 						name: 'Get Many',
 						value: 'getAll',
 						action: 'Get many rules',
-					},
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get a rule',
 					},
 					{
 						name: 'Create',
@@ -758,7 +722,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['rule'],
-						operation: ['update', 'delete', 'get'],
+						operation: ['update', 'delete'],
 					},
 				},
 			},
@@ -834,7 +798,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Schedule operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -850,11 +813,6 @@ export class ActualBudget implements INodeType {
 						name: 'Get Many',
 						value: 'getAll',
 						action: 'Get many schedules',
-					},
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get a schedule',
 					},
 					{
 						name: 'Create',
@@ -887,7 +845,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['schedule'],
-						operation: ['update', 'delete', 'get'],
+						operation: ['update', 'delete'],
 					},
 				},
 			},
@@ -904,7 +862,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Transaction operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -930,11 +887,6 @@ export class ActualBudget implements INodeType {
 						name: 'Get Many',
 						value: 'getAll',
 						action: 'Get many transactions',
-					},
-					{
-						name: 'Get',
-						value: 'get',
-						action: 'Get a transaction',
 					},
 					{
 						name: 'Import',
@@ -975,7 +927,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['transaction'],
-						operation: ['update', 'delete', 'get'],
+						operation: ['update', 'delete'],
 					},
 				},
 			},
@@ -1146,7 +1098,6 @@ export class ActualBudget implements INodeType {
 					},
 				},
 			},
-			// Utility operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -1178,16 +1129,6 @@ export class ActualBudget implements INodeType {
 						value: 'getIdByName',
 						action: 'Get ID by name',
 					},
-					{
-						name: 'Amount to Integer',
-						value: 'amountToInteger',
-						action: 'Convert amount to integer',
-					},
-					{
-						name: 'Integer to Amount',
-						value: 'integerToAmount',
-						action: 'Convert integer to amount',
-					},
 				],
 				default: 'sync',
 			},
@@ -1205,19 +1146,6 @@ export class ActualBudget implements INodeType {
 					show: {
 						resource: ['utility'],
 						operation: ['runBankSync'],
-					},
-				},
-			},
-			{
-				displayName: 'Amount',
-				name: 'amount',
-				type: 'number',
-				default: 0,
-				description: 'The amount to convert',
-				displayOptions: {
-					show: {
-						resource: ['utility'],
-						operation: ['amountToInteger', 'integerToAmount'],
 					},
 				},
 			},
@@ -1281,19 +1209,12 @@ export class ActualBudget implements INodeType {
 		],
 	};
 
-	/**
-	 * Contains methods for loading dynamic options for node properties.
-	 */
 	methods = {
 		loadOptions: {
-			/**
-			 * Fetches a list of accounts to be used in a dropdown.
-			 * @returns A promise that resolves to an array of account options.
-			 */
 			async getAccounts(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1311,14 +1232,10 @@ export class ActualBudget implements INodeType {
 					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
-			/**
-			 * Fetches a list of categories to be used in a dropdown.
-			 * @returns A promise that resolves to an array of category options.
-			 */
 			async getCategories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1336,14 +1253,10 @@ export class ActualBudget implements INodeType {
 					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
-			/**
-			 * Fetches a list of category groups to be used in a dropdown.
-			 * @returns A promise that resolves to an array of category group options.
-			 */
 			async getCategoryGroups(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1361,14 +1274,10 @@ export class ActualBudget implements INodeType {
 					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
-			/**
-			 * Fetches a list of payees to be used in a dropdown.
-			 * @returns A promise that resolves to an array of payee options.
-			 */
 			async getPayees(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1386,14 +1295,10 @@ export class ActualBudget implements INodeType {
 					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
-			/**
-			 * Fetches a list of rules to be used in a dropdown.
-			 * @returns A promise that resolves to an array of rule options.
-			 */
 			async getRules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1411,14 +1316,10 @@ export class ActualBudget implements INodeType {
 					await ActualBudget.shutdownApiClient.call(this);
 				}
 			},
-			/**
-			 * Fetches a list of schedules to be used in a dropdown.
-			 * @returns A promise that resolves to an array of schedule options.
-			 */
 			async getSchedules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				await ActualBudget.initApiClient.call(this);
 				const credentials = await this.getCredentials('actualBudgetApi');
 				const { syncId } = credentials as { syncId: string };
+				await ActualBudget.initApiClient.call(this);
 				if (syncId) {
 					await api.downloadBudget(syncId);
 				}
@@ -1439,85 +1340,29 @@ export class ActualBudget implements INodeType {
 		},
 	};
 
-	/**
-	 * Executes the node's logic based on the selected resource and operation.
-	 * @param this - The context of the execute function.
-	 * @returns A promise that resolves to the execution result.
-	 */
 	async execute(this: IExecuteFunctions): Promise<any> {
 		const items = this.getInputData();
 		const returnData = [];
 
 		const credentials = await this.getCredentials('actualBudgetApi');
 		const { syncId } = credentials as { syncId: string };
-		console.log(`syncId: ${syncId}`);
 
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', i) as string;
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			            try {
-			                let result: any;
-			
-			                switch (resource) {					case 'account':
+			await ActualBudget.initApiClient.call(this);
+			await api.downloadBudget(syncId);
+
+			try {
+				let result: any;
+
+				switch (resource) {
+					case 'account':
 						switch (operation) {
 							case 'getAll':
 								result = await api.getAccounts();
 								break;
-							case 'close': {
-								const accountIdToClose = this.getNodeParameter('accountId', i) as string;
-								await api.closeAccount(accountIdToClose);
-								result = { success: true };
-								break;
-							}
-							case 'create': {
-								const name = this.getNodeParameter('name', i) as string;
-								const type = this.getNodeParameter('type', i) as string;
-								const offbudget = this.getNodeParameter('offbudget', i) as boolean;
-								const closed = this.getNodeParameter('closed', i) as boolean;
-								const account = {
-									name,
-									type,
-									offbudget,
-									closed,
-								};
-								result = await api.createAccount(account);
-								break;
-							}
-							case 'delete': {
-								const accountIdForDelete = this.getNodeParameter('accountId', i) as string;
-								await api.deleteAccount(accountIdForDelete);
-								result = { success: true };
-								break;
-							}
-							case 'get': {
-								const accountIdToGet = this.getNodeParameter('accountId', i) as string;
-								const accounts = await api.getAccounts();
-								result = accounts.find((a: any) => a.id === accountIdToGet);
-								break;
-							}
-							case 'reopen': {
-								const accountIdToReopen = this.getNodeParameter('accountId', i) as string;
-								await api.reopenAccount(accountIdToReopen);
-								result = { success: true };
-								break;
-							}
-							case 'update': {
-								const accountIdToUpdate = this.getNodeParameter('accountId', i) as string;
-								const name = this.getNodeParameter('name', i) as string;
-								const type = this.getNodeParameter('type', i) as string;
-								const offbudget = this.getNodeParameter('offbudget', i) as boolean;
-								const closed = this.getNodeParameter('closed', i) as boolean;
-								const account = {
-									name,
-									type,
-									offbudget,
-									closed,
-								};
-								await api.updateAccount(accountIdToUpdate, account);
-								result = { success: true };
-								break;
-							}
 							// Add other account operations here
 							default:
 								throw new NodeApiError(this.getNode(), {
@@ -1584,27 +1429,24 @@ export class ActualBudget implements INodeType {
 						break;
 					case 'transaction':
 						switch (operation) {
-							case 'getAll': {
+							case 'getAll':
 								const accountId = this.getNodeParameter('accountId', i) as string;
 								const startDate = this.getNodeParameter('startDate', i) as string;
 								const endDate = this.getNodeParameter('endDate', i) as string;
 								result = await api.getTransactions(accountId, startDate, endDate);
 								break;
-							}
-							case 'add': {
+							case 'add':
 								const accountIdForAdd = this.getNodeParameter('accountId', i) as string;
 								const transactionsForAdd = this.getNodeParameter('transactions', i) as any[];
 								result = await api.addTransactions(accountIdForAdd, transactionsForAdd);
 								break;
-							}
-							case 'import': {
+							case 'import':
 								const accountIdForImport = this.getNodeParameter('accountId', i) as string;
 								const transactionsForImport = this.getNodeParameter('transactions', i) as any[];
 								await api.importTransactions(accountIdForImport, transactionsForImport);
 								result = { success: true };
 								break;
-							}
-							case 'update': {
+							case 'update':
 								const transactionIdForUpdate = this.getNodeParameter('transactionId', i) as string;
 								const fieldsForUpdate = {
 									payee: this.getNodeParameter('payeeId', i) as string,
@@ -1614,245 +1456,24 @@ export class ActualBudget implements INodeType {
 								};
 								result = await api.updateTransaction(transactionIdForUpdate, fieldsForUpdate);
 								break;
-							}
-							case 'delete': {
+							case 'delete':
 								const transactionIdForDelete = this.getNodeParameter('transactionId', i) as string;
 								await api.deleteTransaction(transactionIdForDelete);
 								result = { success: true };
 								break;
-							}
-							case 'get': {
-								const transactionIdToGet = this.getNodeParameter('transactionId', i) as string;
-								const transactions = await api.getTransactions(
-									this.getNodeParameter('accountId', i) as string,
-									'',
-									'',
-								);
-								result = transactions.find((t: any) => t.id === transactionIdToGet);
-								break;
-							}
 							default:
 								throw new NodeApiError(this.getNode(), {
 									message: `Unknown operation ${operation} for resource ${resource}`,
 								});
-						}
-						break;
-					case 'category':
-						switch (operation) {
-							case 'getAll':
-								result = await api.getCategories();
-								break;
-							case 'create':
-								const nameForCreate = this.getNodeParameter('name', i) as string;
-								const groupIdForCreate = this.getNodeParameter('categoryGroupId', i) as string;
-								result = await api.createCategory({
-									name: nameForCreate,
-									group_id: groupIdForCreate,
-								});
-								break;
-							case 'update':
-								const categoryIdForUpdate = this.getNodeParameter('categoryId', i) as string;
-								const nameForUpdate = this.getNodeParameter('name', i) as string;
-								const groupIdForUpdate = this.getNodeParameter('categoryGroupId', i) as string;
-								await api.updateCategory(categoryIdForUpdate, {
-									name: nameForUpdate,
-									group_id: groupIdForUpdate,
-								});
-								result = { success: true };
-								break;
-							case 'delete':
-								const categoryIdForDelete = this.getNodeParameter('categoryId', i) as string;
-								await api.deleteCategory(categoryIdForDelete);
-								result = { success: true };
-								break;
-							default:
-								throw new NodeApiError(this.getNode(), {
-									message: `Unknown operation ${operation} for resource ${resource}`,
-								});
-						}
-						break;
-					case 'categoryGroup':
-						switch (operation) {
-							case 'getAll':
-								result = await api.getCategoryGroups();
-								break;
-							case 'create':
-								const nameForCreate = this.getNodeParameter('name', i) as string;
-								result = await api.createCategoryGroup({
-									name: nameForCreate,
-								});
-								break;
-							case 'update':
-								const groupIdForUpdate = this.getNodeParameter('categoryGroupId', i) as string;
-								const nameForUpdate = this.getNodeParameter('name', i) as string;
-								await api.updateCategoryGroup(groupIdForUpdate, {
-									name: nameForUpdate,
-								});
-								result = { success: true };
-								break;
-							case 'delete':
-								const groupIdForDelete = this.getNodeParameter('categoryGroupId', i) as string;
-								await api.deleteCategoryGroup(groupIdForDelete);
-								result = { success: true };
-								break;
-							default:
-								throw new NodeApiError(this.getNode(), {
-									message: `Unknown operation ${operation} for resource ${resource}`,
-								});
-						}
-						break;
-					case 'payee':
-						switch (operation) {
-							case 'create': {
-								const name = this.getNodeParameter('name', i) as string;
-								const transferAccountId = this.getNodeParameter('transferAccountId', i) as string;
-								const payee = {
-									name,
-									transfer_acct: transferAccountId,
-								};
-								result = await api.createPayee(payee);
-								break;
-							}
-							case 'delete': {
-								const payeeIdForDelete = this.getNodeParameter('payeeId', i) as string;
-								await api.deletePayee(payeeIdForDelete);
-								result = { success: true };
-								break;
-							}
-							case 'get': {
-								const payeeIdToGet = this.getNodeParameter('payeeId', i) as string;
-								const payees = await api.getPayees();
-								result = payees.find((p: any) => p.id === payeeIdToGet);
-								break;
-							}
-							case 'update': {
-								const payeeIdToUpdate = this.getNodeParameter('payeeId', i) as string;
-								const name = this.getNodeParameter('name', i) as string;
-								const transferAccountId = this.getNodeParameter('transferAccountId', i) as string;
-								const payee = {
-									name,
-									transfer_acct: transferAccountId,
-								};
-								await api.updatePayee(payeeIdToUpdate, payee);
-								result = { success: true };
-								break;
-							}
-						}
-						break;
-					case 'rule':
-						switch (operation) {
-							case 'create': {
-								const stage = this.getNodeParameter('stage', i) as string;
-								const conditions = this.getNodeParameter('conditions', i) as any[];
-								const actions = this.getNodeParameter('actions', i) as any[];
-								const conditionsOp = this.getNodeParameter('conditionsOp', i) as string;
-								const rule = {
-									stage,
-									conditions,
-									actions,
-									'conditions-op': conditionsOp,
-								};
-								result = await api.createRule(rule);
-								break;
-							}
-							case 'delete': {
-								const ruleIdToDelete = this.getNodeParameter('ruleId', i) as string;
-								await api.deleteRule(ruleIdToDelete);
-								result = { success: true };
-								break;
-							}
-							case 'get': {
-								const ruleIdToGet = this.getNodeParameter('ruleId', i) as string;
-								const rules = await api.getRules();
-								result = rules.find((r: any) => r.id === ruleIdToGet);
-								break;
-							}
-							case 'update': {
-								const ruleIdToUpdate = this.getNodeParameter('ruleId', i) as string;
-								const stage = this.getNodeParameter('stage', i) as string;
-								const conditions = this.getNodeParameter('conditions', i) as any[];
-								const actions = this.getNodeParameter('actions', i) as any[];
-								const conditionsOp = this.getNodeParameter('conditionsOp', i) as string;
-								const rule = {
-									id: ruleIdToUpdate,
-									stage,
-									conditions,
-									actions,
-									'conditions-op': conditionsOp,
-								};
-								await api.updateRule(rule);
-								result = { success: true };
-								break;
-							}
-						}
-						break;
-					case 'schedule':
-						switch (operation) {
-							case 'create': {
-								const scheduleDetails = this.getNodeParameter('scheduleDetails', i) as object;
-								result = await api.createSchedule(scheduleDetails);
-								break;
-							}
-							case 'delete': {
-								const scheduleIdToDelete = this.getNodeParameter('scheduleId', i) as string;
-								await api.deleteSchedule(scheduleIdToDelete);
-								result = { success: true };
-								break;
-							}
-							case 'get': {
-								const scheduleIdToGet = this.getNodeParameter('scheduleId', i) as string;
-								const schedules = await api.getSchedules();
-								result = schedules.find((s: any) => s.id === scheduleIdToGet);
-								break;
-							}
-							case 'update': {
-								const scheduleIdToUpdate = this.getNodeParameter('scheduleId', i) as string;
-								const scheduleDetails = this.getNodeParameter('scheduleDetails', i) as object;
-								await api.updateSchedule(scheduleIdToUpdate, scheduleDetails);
-								result = { success: true };
-								break;
-							}
-						}
-						break;
-					case 'utility':
-						switch (operation) {
-							case 'runQuery': {
-								const query = this.getNodeParameter('query', i) as any;
-								result = await api.runQuery(query);
-								break;
-							}
-							case 'sync':
-								await api.sync();
-								result = { success: true };
-								break;
-							case 'runBankSync': {
-								const accountId = this.getNodeParameter('accountId', i) as string;
-								await api.runBankSync({ accountId });
-								result = { success: true };
-								break;
-							}
-							case 'amountToInteger': {
-								const amount = this.getNodeParameter('amount', i) as number;
-								result = api.utils.amountToInteger(amount);
-								break;
-							}
-							case 'integerToAmount': {
-								const amount = this.getNodeParameter('amount', i) as number;
-								result = api.utils.integerToAmount(amount);
-								break;
-							}
 						}
 						break;
 					// Add other resource cases here
 					default:
-						throw new NodeApiError(this.getNode(), {
-							message: `Not implemented or unknown resource ${resource}`,
-						});
+						throw new NodeApiError(this.getNode(), { message: `Unknown resource ${resource}` });
 				}
 
 				returnData.push({ json: { data: result } });
 			} catch (error) {
-				console.error('Error executing operation:', error);
 				{
 					if (this.continueOnFail()) {
 						returnData.push({ json: { error: (error as Error).message } });

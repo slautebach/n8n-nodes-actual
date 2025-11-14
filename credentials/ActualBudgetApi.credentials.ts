@@ -1,18 +1,9 @@
 import { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
 
-/**
- * Represents the credentials for the Actual Budget API.
- * This class defines the properties required to connect to an Actual Budget instance,
- * including the server URL, password, and sync ID.
- */
 export class ActualBudgetApi implements ICredentialType {
-	// The name of the credential type.
 	name = 'actualBudgetApi';
-	// The display name for the credential type in the n8n UI.
 	displayName = 'Actual Budget API';
-	// URL to the official documentation for the Actual Budget API.
 	documentationUrl = 'https://actualbudget.org/docs/api/';
-	// Defines the properties required for the credential.
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Server URL',
@@ -41,10 +32,6 @@ export class ActualBudgetApi implements ICredentialType {
 		},
 	];
 
-	/**
-	 * Defines a test request to verify the credentials.
-	 * This request attempts to log in to the Actual Budget server using the provided credentials.
-	 */
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{$credentials?.serverURL}}',
