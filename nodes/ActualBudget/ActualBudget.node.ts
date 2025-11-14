@@ -1678,6 +1678,17 @@ export class ActualBudget implements INodeType {
 								});
 						}
 						break;
+					case 'rule':
+						switch (operation) {
+							case 'getAll':
+								result = await api.getRules();
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
 					// Add other resource cases here
 					default:
 						throw new NodeApiError(this.getNode(), { message: `Unknown resource ${resource}` });

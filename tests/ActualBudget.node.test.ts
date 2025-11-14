@@ -1086,6 +1086,92 @@ describe('ActualBudget Node', () => {
 					await api.shutdown();
 				}
 			});
+
+			describe('execute', () => {
+				it('get all rules', async () => {
+					const node = new ActualBudget();
+					let testRuleId: string | null = null;
+					let testPayeeId: string | null = null;
+					let testCategoryId: string | null = null;
+					let testGroupId: string | null = null;
+
+					try {
+						const payeeName = `Test Payee for Rule ${Date.now()}`;
+						testPayeeId = await api.createPayee({ name: payeeName });
+
+						const groupName = `Test Group for Rule ${Date.now()}`;
+						testGroupId = await api.createCategoryGroup({ name: groupName });
+						const categoryName = `Test Category for Rule ${Date.now()}`;
+						testCategoryId = await api.createCategory({ name: categoryName, group_id: testGroupId as string });
+
+						const rule = {
+							stage: null,
+							conditionsOp: 'and',
+							conditions: [{ field: 'payee', op: 'is', value: testPayeeId }],
+							actions: [{ field: 'category', op: 'set', value: testCategoryId }],
+						};
+
+						const createdRule = await api.createRule(rule);
+						testRuleId = createdRule.id;
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'rule';
+								if (name === 'operation') return 'getAll';
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(Array.isArray(result[0][0].json.data)).toBe(true);
+						const rules = result[0][0].json.data;
+						const foundRule = rules.find((r: any) => r.id === testRuleId);
+						expect(foundRule).toBeDefined();
+
+					} catch (error: any) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						if (testRuleId) {
+							await api.deleteRule(testRuleId);
+						}
+						if (testCategoryId) {
+							await api.deleteCategory(testCategoryId);
+						}
+						if (testGroupId) {
+							await api.deleteCategoryGroup(testGroupId);
+						}
+						if (testPayeeId) {
+							await api.deletePayee(testPayeeId);
+						}
+						await api.shutdown();
+					}
+				});
+			});
 		});
 
 		describe('Schedules', () => {
