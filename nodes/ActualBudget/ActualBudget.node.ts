@@ -1467,12 +1467,13 @@ export class ActualBudget implements INodeType {
 							case 'getAll':
 								result = await api.getAccounts();
 								break;
-							case 'close':
+							case 'close': {
 								const accountIdToClose = this.getNodeParameter('accountId', i) as string;
 								await api.closeAccount(accountIdToClose);
 								result = { success: true };
 								break;
-							case 'create':
+							}
+							case 'create': {
 								const name = this.getNodeParameter('name', i) as string;
 								const type = this.getNodeParameter('type', i) as string;
 								const offbudget = this.getNodeParameter('offbudget', i) as boolean;
@@ -1485,21 +1486,26 @@ export class ActualBudget implements INodeType {
 								};
 								result = await api.createAccount(account);
 								break;
-							case 'delete':
+							}
+							case 'delete': {
 								const accountIdForDelete = this.getNodeParameter('accountId', i) as string;
 								await api.deleteAccount(accountIdForDelete);
 								result = { success: true };
 								break;
-							case 'get':
+							}
+							case 'get': {
 								const accountIdToGet = this.getNodeParameter('accountId', i) as string;
-								result = await api.getAccount(accountIdToGet);
+								const accounts = await api.getAccounts();
+								result = accounts.find((a: any) => a.id === accountIdToGet);
 								break;
-							case 'reopen':
+							}
+							case 'reopen': {
 								const accountIdToReopen = this.getNodeParameter('accountId', i) as string;
 								await api.reopenAccount(accountIdToReopen);
 								result = { success: true };
 								break;
-							case 'update':
+							}
+							case 'update': {
 								const accountIdToUpdate = this.getNodeParameter('accountId', i) as string;
 								const name = this.getNodeParameter('name', i) as string;
 								const type = this.getNodeParameter('type', i) as string;
@@ -1514,6 +1520,7 @@ export class ActualBudget implements INodeType {
 								await api.updateAccount(accountIdToUpdate, account);
 								result = { success: true };
 								break;
+							}
 							// Add other account operations here
 							default:
 								throw new NodeApiError(this.getNode(), {
@@ -1580,24 +1587,27 @@ export class ActualBudget implements INodeType {
 						break;
 					case 'transaction':
 						switch (operation) {
-							case 'getAll':
+							case 'getAll': {
 								const accountId = this.getNodeParameter('accountId', i) as string;
 								const startDate = this.getNodeParameter('startDate', i) as string;
 								const endDate = this.getNodeParameter('endDate', i) as string;
 								result = await api.getTransactions(accountId, startDate, endDate);
 								break;
-							case 'add':
+							}
+							case 'add': {
 								const accountIdForAdd = this.getNodeParameter('accountId', i) as string;
 								const transactionsForAdd = this.getNodeParameter('transactions', i) as any[];
 								result = await api.addTransactions(accountIdForAdd, transactionsForAdd);
 								break;
-							case 'import':
+							}
+							case 'import': {
 								const accountIdForImport = this.getNodeParameter('accountId', i) as string;
 								const transactionsForImport = this.getNodeParameter('transactions', i) as any[];
 								await api.importTransactions(accountIdForImport, transactionsForImport);
 								result = { success: true };
 								break;
-							case 'update':
+							}
+							case 'update': {
 								const transactionIdForUpdate = this.getNodeParameter('transactionId', i) as string;
 								const fieldsForUpdate = {
 									payee: this.getNodeParameter('payeeId', i) as string,
@@ -1607,15 +1617,21 @@ export class ActualBudget implements INodeType {
 								};
 								result = await api.updateTransaction(transactionIdForUpdate, fieldsForUpdate);
 								break;
-							case 'delete':
+							}
+							case 'delete': {
 								const transactionIdForDelete = this.getNodeParameter('transactionId', i) as string;
 								await api.deleteTransaction(transactionIdForDelete);
 								result = { success: true };
 								break;
-							case 'get':
+							}
+							case 'get': {
 								const transactionIdToGet = this.getNodeParameter('transactionId', i) as string;
-								result = await api.getTransaction(transactionIdToGet);
+								const transactions = await api.getTransactions(
+									this.getNodeParameter('accountId', i) as string,
+								);
+								result = transactions.find((t: any) => t.id === transactionIdToGet);
 								break;
+							}
 							default:
 								throw new NodeApiError(this.getNode(), {
 									message: `Unknown operation ${operation} for resource ${resource}`,
