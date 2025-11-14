@@ -1387,6 +1387,10 @@ export class ActualBudget implements INodeType {
 		},
 	};
 
+	async destroy(this: IHookFunctions): Promise<void> {
+		await ActualBudget.shutdownApiClient.call(this);
+	}
+
 	/**
 	 * Executes the node's operation.
 	 * @param this - The context of the function, IExecuteFunctions.
@@ -1396,15 +1400,12 @@ export class ActualBudget implements INodeType {
 		const items = this.getInputData();
 		const returnData = [];
 
-		const credentials = await this.getCredentials('actualBudgetApi');
-		const { syncId } = credentials as { syncId: string };
 
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', i) as string;
 			const operation = this.getNodeParameter('operation', i) as string;
 
 			await ActualBudget.initApiClient.call(this);
-			await api.downloadBudget(syncId);
 
 			try {
 				let result: any;
@@ -1587,8 +1588,6 @@ export class ActualBudget implements INodeType {
 					}
 					throw error;
 				}
-			} finally {
-				await ActualBudget.shutdownApiClient.call(this);
 			}
 		}
 
