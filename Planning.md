@@ -6,7 +6,6 @@ Based on a review of the `@actual-app/api` documentation and the existing codeba
 - `closeAccount(id)`
 - `createAccount(account)`
 - `deleteAccount(id)`
-- `getAccount(id)`
 - `reopenAccount(id)`
 - `updateAccount(id, fields)`
 
@@ -44,12 +43,11 @@ Based on a review of the `@actual-app/api` documentation and the existing codeba
 Here is a task list for implementing the missing features:
 
 ### Account Operations
-- [ ] Implement `closeAccount` operation.
-- [ ] Implement `createAccount` operation.
-- [ ] Implement `deleteAccount` operation.
-- [ ] Implement `getAccount` operation.
-- [ ] Implement `reopenAccount` operation.
-- [ ] Implement `updateAccount` operation.
+- [x] Implement `closeAccount` operation.
+- [x] Implement `createAccount` operation.
+- [x] Implement `deleteAccount` operation.
+- [x] Implement `reopenAccount` operation.
+- [x] Implement `updateAccount` operation.
 
 ### Payee Operations
 - [ ] Implement `createPayee` operation.

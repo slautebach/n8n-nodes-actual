@@ -1412,10 +1412,64 @@ export class ActualBudget implements INodeType {
 				switch (resource) {
 					case 'account':
 						switch (operation) {
+							case 'create':
+								const nameForCreate = this.getNodeParameter('name', i) as string;
+								const typeForCreate = this.getNodeParameter('type', i) as any;
+								const offbudgetForCreate = this.getNodeParameter('offbudget', i) as boolean;
+								const fintsForCreate = this.getNodeParameter('fints', i) as boolean;
+								const closedForCreate = this.getNodeParameter('closed', i) as boolean;
+								result = await api.createAccount({
+									name: nameForCreate,
+									type: typeForCreate,
+									offbudget: offbudgetForCreate,
+									fints: fintsForCreate,
+									closed: closedForCreate,
+								});
+								break;
 							case 'getAll':
 								result = await api.getAccounts();
 								break;
-							// Add other account operations here
+							case 'update':
+								const accountIdForUpdate = this.getNodeParameter('accountId', i) as string;
+								const nameForUpdate = this.getNodeParameter('name', i) as string;
+								const typeForUpdate = this.getNodeParameter('type', i) as any;
+								const offbudgetForUpdate = this.getNodeParameter('offbudget', i) as boolean;
+								const fintsForUpdate = this.getNodeParameter('fints', i) as boolean;
+								const closedForUpdate = this.getNodeParameter('closed', i) as boolean;
+								await api.updateAccount(accountIdForUpdate, {
+									name: nameForUpdate,
+									type: typeForUpdate,
+									offbudget: offbudgetForUpdate,
+									fints: fintsForUpdate,
+									closed: closedForUpdate,
+								});
+								result = { success: true };
+								break;
+							case 'close':
+								const accountIdForClose = this.getNodeParameter('accountId', i) as string;
+								await api.closeAccount(accountIdForClose);
+								result = { success: true };
+								break;
+							case 'reopen':
+								const accountIdForReopen = this.getNodeParameter('accountId', i) as string;
+								await api.reopenAccount(accountIdForReopen);
+								result = { success: true };
+								break;
+							case 'delete':
+								const accountIdForDelete = this.getNodeParameter('accountId', i) as string;
+								await api.deleteAccount(accountIdForDelete);
+								result = { success: true };
+								break;
+							case 'getBalance':
+								const accountIdForBalance = this.getNodeParameter('accountId', i) as string;
+								const accounts = await api.getAccounts();
+								const account = accounts.find(a => a.id === accountIdForBalance);
+								if (account) {
+									result = { balance: account.balance };
+								} else {
+									throw new NodeApiError(this.getNode(), { message: `Account with ID ${accountIdForBalance} not found` });
+								}
+								break;
 							default:
 								throw new NodeApiError(this.getNode(), {
 									message: `Unknown operation ${operation} for resource ${resource}`,
