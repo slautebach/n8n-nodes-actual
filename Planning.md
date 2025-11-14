@@ -50,10 +50,10 @@ Here is a task list for implementing the missing features:
 - [x] Implement `updateAccount` operation.
 
 ### Payee Operations
-- [ ] Implement `createPayee` operation.
-- [ ] Implement `deletePayee` operation.
-- [ ] Implement `getPayee` operation.
-- [ ] Implement `updatePayee` operation.
+- [x] Implement `createPayee` operation.
+- [x] Implement `deletePayee` operation.
+- [x] Implement `getPayee` operation.
+- [x] Implement `updatePayee` operation.
 
 ### Rule Operations
 - [ ] Implement `createRule` operation.

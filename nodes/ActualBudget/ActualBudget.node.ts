@@ -603,8 +603,13 @@ export class ActualBudget implements INodeType {
 						action: 'Delete a payee',
 					},
 					{
+						name: 'Get',
+						value: 'get',
+						action: 'Get a payee',
+					},
+					{
 						name: 'Get Many',
-						value: 'getAll',
+						value: 'getMany',
 						action: 'Get many payees',
 					},
 					{
@@ -623,7 +628,7 @@ export class ActualBudget implements INodeType {
 						action: 'Update a payee',
 					},
 				],
-				default: 'getAll',
+				default: 'getMany',
 			},
 			{
 				displayName: 'Payee Name or ID',
@@ -638,7 +643,7 @@ export class ActualBudget implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['payee'],
-						operation: ['update', 'delete', 'merge', 'getRules'],
+						operation: ['update', 'delete', 'merge', 'getRules', 'get'],
 					},
 				},
 			},
@@ -1593,6 +1598,62 @@ export class ActualBudget implements INodeType {
 							case 'delete':
 								const categoryGroupIdForDelete = this.getNodeParameter('categoryGroupId', i) as string;
 								await api.deleteCategoryGroup(categoryGroupIdForDelete);
+								result = { success: true };
+								break;
+							default:
+								throw new NodeApiError(this.getNode(), {
+									message: `Unknown operation ${operation} for resource ${resource}`,
+								});
+						}
+						break;
+					case 'payee':
+						switch (operation) {
+							case 'create':
+								const nameForCreate = this.getNodeParameter('name', i) as string;
+								const transferAccountIdForCreate = this.getNodeParameter('transferAccountId', i) as string;
+								result = await api.createPayee({
+									name: nameForCreate,
+									transfer_acct: transferAccountIdForCreate || undefined,
+								});
+								break;
+							case 'delete':
+								const payeeIdForDelete = this.getNodeParameter('payeeId', i) as string;
+								await api.deletePayee(payeeIdForDelete);
+								result = { success: true };
+								break;
+							case 'get':
+								const payeeIdForGet = this.getNodeParameter('payeeId', i) as string;
+								const payees = await api.getPayees();
+								const payee = payees.find((p) => p.id === payeeIdForGet);
+								if (payee) {
+									result = payee;
+								} else {
+									throw new NodeApiError(this.getNode(), {
+										message: `Payee with ID ${payeeIdForGet} not found`,
+									});
+								}
+								break;
+							case 'getMany':
+								result = await api.getPayees();
+								break;
+							case 'getRules':
+								const payeeIdForGetRules = this.getNodeParameter('payeeId', i) as string;
+								result = await api.getPayeeRules(payeeIdForGetRules);
+								break;
+							case 'merge':
+								const payeeIdForMerge = this.getNodeParameter('payeeId', i) as string;
+								const targetPayeeIdForMerge = this.getNodeParameter('targetPayeeId', i) as string;
+								await api.mergePayees(payeeIdForMerge, targetPayeeIdForMerge);
+								result = { success: true };
+								break;
+							case 'update':
+								const payeeIdForUpdate = this.getNodeParameter('payeeId', i) as string;
+								const nameForUpdate = this.getNodeParameter('name', i) as string;
+								const transferAccountIdForUpdate = this.getNodeParameter('transferAccountId', i) as string;
+								await api.updatePayee(payeeIdForUpdate, {
+									name: nameForUpdate,
+									transfer_acct: transferAccountIdForUpdate || undefined,
+								});
 								result = { success: true };
 								break;
 							default:
