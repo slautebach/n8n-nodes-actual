@@ -9,7 +9,7 @@ import * as fs from 'fs';
 // To run them, create a .env file in the project root with:
 // ACTUAL_SERVER_URL=http://localhost:5006
 // ACTUAL_SERVER_PASSWORD=your-password
-// ACTUAL_BUDGET_ID=your-budget-id
+// ACTUAL_SYNC_ID=your-budget-id
 
 describe('ActualBudget Node', () => {
 	it('should have a description', () => {
@@ -32,7 +32,7 @@ describe('ActualBudget Node', () => {
 						password: process.env.ACTUAL_SERVER_PASSWORD,
 						dataDir: dataDirPath,
 					});
-					await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 				} catch (error) {
 					console.error('Failed to initialize Actual Budget API:', error);
 					throw error;
@@ -86,7 +86,7 @@ describe('ActualBudget Node', () => {
 							password: process.env.ACTUAL_SERVER_PASSWORD,
 							dataDir: 'tests/dataDir',
 						});
-						await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 						await api.deleteAccount(testAccountId);
 						await api.shutdown();
 					}
@@ -136,7 +136,7 @@ describe('ActualBudget Node', () => {
 						password: process.env.ACTUAL_SERVER_PASSWORD,
 						dataDir: 'tests/dataDir',
 					});
-					await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 					if (testCategoryId) {
 						await api.deleteCategory(testCategoryId);
 					}
@@ -186,7 +186,7 @@ describe('ActualBudget Node', () => {
 							password: process.env.ACTUAL_SERVER_PASSWORD,
 							dataDir: 'tests/dataDir',
 						});
-						await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 						await api.deleteCategoryGroup(testGroupId);
 						await api.shutdown();
 					}
@@ -232,7 +232,7 @@ describe('ActualBudget Node', () => {
 							password: process.env.ACTUAL_SERVER_PASSWORD,
 							dataDir: 'tests/dataDir',
 						});
-						await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 						await api.deletePayee(testPayeeId);
 						await api.shutdown();
 					}
@@ -297,7 +297,7 @@ describe('ActualBudget Node', () => {
 						password: process.env.ACTUAL_SERVER_PASSWORD,
 						dataDir: 'tests/dataDir',
 					});
-					await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 					if (testRuleId) {
 						await api.deleteRule(testRuleId);
 					}
@@ -370,7 +370,7 @@ describe('ActualBudget Node', () => {
 						password: process.env.ACTUAL_SERVER_PASSWORD,
 						dataDir: 'tests/dataDir',
 					});
-					await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 					if (testScheduleId) {
 						await api.deleteSchedule(testScheduleId);
 					}
@@ -399,7 +399,7 @@ describe('ActualBudget Node', () => {
 						password: process.env.ACTUAL_SERVER_PASSWORD,
 						dataDir: dataDirPath,
 					});
-					await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+					await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 				} catch (error) {
 					console.error('Failed to initialize Actual Budget API:', error);
 					throw error;
@@ -440,7 +440,7 @@ describe('ActualBudget Node', () => {
 							if (name === 'accountId') return testAccountId;
 							if (name === 'startDate') return '2023-01-01';
 							if (name === 'endDate') return '2023-12-31';
-							if (name === 'budgetId') return process.env.ACTUAL_BUDGET_ID;
+							if (name === 'syncId') return process.env.ACTUAL_SYNC_ID;
 							return null;
 						}),
 						getInputData: jest.fn().mockReturnValue([
@@ -477,7 +477,7 @@ describe('ActualBudget Node', () => {
 							password: process.env.ACTUAL_SERVER_PASSWORD,
 							dataDir: 'tests/dataDir',
 						});
-						await api.downloadBudget(process.env.ACTUAL_BUDGET_ID as string);
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
 						await api.deleteAccount(testAccountId);
 						await api.shutdown();
 					}

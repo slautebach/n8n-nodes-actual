@@ -126,9 +126,9 @@ export class ActualBudget implements INodeType {
 				noDataExpression: true,
 			},
 			{
-				displayName: 'Budget ID',
-				description: 'The ID of the Budget you are working on/with',
-				name: 'budgetId',
+				displayName: 'Sync ID',
+				description: 'The Sync ID of the Budget you are working on/with',
+				name: 'syncId',
 				type: 'string',
 				default: '',
 				required: true,
@@ -1340,10 +1340,10 @@ export class ActualBudget implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', i) as string;
 			const operation = this.getNodeParameter('operation', i) as string;
-			const budgetId = this.getNodeParameter('budgetId', i) as string;
+			const syncId = this.getNodeParameter('syncId', i) as string;
 
 			await ActualBudget.initApiClient.call(this);
-			await api.downloadBudget(budgetId);
+			await api.downloadBudget(syncId);
 
 			try {
 				let result: any;
@@ -1409,8 +1409,8 @@ export class ActualBudget implements INodeType {
 								result = { success: true };
 								break;
 							case 'download':
-								const budgetIdForDownload = this.getNodeParameter('budgetId', i) as string;
-								result = await api.downloadBudget(budgetIdForDownload);
+								const syncIdForDownload = this.getNodeParameter('syncId', i) as string;
+								result = await api.downloadBudget(syncIdForDownload);
 								break;
 							default:
 								throw new NodeApiError(this.getNode(), {
