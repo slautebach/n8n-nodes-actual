@@ -199,6 +199,53 @@ describe('ActualBudget Node', () => {
 				}
 			});
 
+			it('getPayees should return payees from a live server', async () => {
+				const loadOptionsFunctions = {
+					getCredentials: jest.fn().mockResolvedValue({
+						serverURL: process.env.ACTUAL_SERVER_URL,
+						password: process.env.ACTUAL_SERVER_PASSWORD,
+						syncId: process.env.ACTUAL_SYNC_ID,
+					}),
+					getNode: jest.fn(),
+				} as unknown as ILoadOptionsFunctions;
+
+				const node = new ActualBudget();
+				let testPayeeId: string | null = null;
+				const payeeName = `Test Payee ${Date.now()}`;
+
+				try {
+					testPayeeId = await api.createPayee({ name: payeeName });
+
+					const result = await node.methods.loadOptions.getPayees.call(loadOptionsFunctions);
+
+					expect(Array.isArray(result)).toBe(true);
+
+					const testPayee = result.find((payee) => payee.name === payeeName);
+					expect(testPayee).toBeDefined();
+					expect(testPayee?.value).toBe(testPayeeId);
+
+				} catch (error) {
+					if (error instanceof NodeApiError) {
+						const errorMessage = (error.cause as Error)?.message || error.message;
+						console.error('Caught NodeApiError:', errorMessage);
+					} else {
+						console.error('Caught unexpected error:', error);
+					}
+					throw error;
+				} finally {
+					if (testPayeeId) {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						await api.deletePayee(testPayeeId);
+						await api.shutdown();
+					}
+				}
+			});
+
 			describe('execute', () => {
 				it('delete a category', async () => {
 					const node = new ActualBudget();
@@ -319,6 +366,525 @@ describe('ActualBudget Node', () => {
 							console.error('Caught unexpected error:', error);
 						}
 						throw error;
+					}
+				});
+			});
+		});
+
+		describe('Payees', () => {
+			it('getPayees should return payees from a live server', async () => {
+				const loadOptionsFunctions = {
+					getCredentials: jest.fn().mockResolvedValue({
+						serverURL: process.env.ACTUAL_SERVER_URL,
+						password: process.env.ACTUAL_SERVER_PASSWORD,
+						syncId: process.env.ACTUAL_SYNC_ID,
+					}),
+					getNode: jest.fn(),
+				} as unknown as ILoadOptionsFunctions;
+
+				const node = new ActualBudget();
+				let testPayeeId: string | null = null;
+				const payeeName = `Test Payee ${Date.now()}`;
+
+				try {
+					testPayeeId = await api.createPayee({ name: payeeName });
+
+					const result = await node.methods.loadOptions.getPayees.call(loadOptionsFunctions);
+
+					expect(Array.isArray(result)).toBe(true);
+
+					const testPayee = result.find((payee) => payee.name === payeeName);
+					expect(testPayee).toBeDefined();
+					expect(testPayee?.value).toBe(testPayeeId);
+
+				} catch (error) {
+					if (error instanceof NodeApiError) {
+						const errorMessage = (error.cause as Error)?.message || error.message;
+						console.error('Caught NodeApiError:', errorMessage);
+					} else {
+						console.error('Caught unexpected error:', error);
+					}
+					throw error;
+				} finally {
+					if (testPayeeId) {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						await api.deletePayee(testPayeeId);
+						await api.shutdown();
+					}
+				}
+			});
+			describe('execute', () => {
+				it('create a payee', async () => {
+					const node = new ActualBudget();
+					let testPayeeId: string | null = null;
+					const payeeName = `New Payee ${Date.now()}`;
+
+					try {
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'create';
+								if (name === 'name') return payeeName;
+								if (name === 'transferAccountId') return '';
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(typeof result[0][0].json.data).toBe('string'); // Expecting the ID string
+						testPayeeId = result[0][0].json.data;
+
+						// Verify the payee was created by fetching it
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						const payees = await api.getPayees();
+						const createdPayee = payees.find(p => p.id === testPayeeId);
+						expect(createdPayee).toBeDefined();
+						expect(createdPayee?.name).toBe(payeeName);
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						if (testPayeeId) {
+							await api.init({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								dataDir: 'tests/dataDir',
+							});
+							await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+							await api.deletePayee(testPayeeId);
+							await api.shutdown();
+						}
+					}
+				});
+
+				it('update a payee', async () => {
+					const node = new ActualBudget();
+					let testPayeeId: string | null = null;
+					const originalPayeeName = `Original Payee ${Date.now()}`;
+					const updatedPayeeName = `Updated Payee ${Date.now()}`;
+
+					try {
+						testPayeeId = await api.createPayee({ name: originalPayeeName });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+														getNodeParameter: jest.fn((name: string) => {
+															if (name === 'resource') return 'payee';
+															if (name === 'operation') return 'update';
+															if (name === 'payeeId') {
+																console.log('payeeId in mock:', testPayeeId);
+																return testPayeeId;
+															}
+															if (name === 'name') return updatedPayeeName;
+															if (name === 'transferAccountId') return undefined;
+															return null;
+														}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data.success).toBe(true);
+
+						// Verify the payee was updated
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						const payees = await api.getPayees();
+						const updatedPayee = payees.find(p => p.id === testPayeeId);
+						expect(updatedPayee).toBeDefined();
+						expect(updatedPayee?.name).toBe(updatedPayeeName);
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						if (testPayeeId) {
+							await api.init({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								dataDir: 'tests/dataDir',
+							});
+							await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+							await api.deletePayee(testPayeeId);
+							await api.shutdown();
+						}
+					}
+				});
+
+				it('get a payee', async () => {
+					const node = new ActualBudget();
+					let testPayeeId: string | null = null;
+					const payeeName = `Get Payee ${Date.now()}`;
+
+					try {
+						testPayeeId = await api.createPayee({ name: payeeName });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'get';
+								if (name === 'payeeId') return testPayeeId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data).toHaveProperty('id', testPayeeId);
+						expect(result[0][0].json.data).toHaveProperty('name', payeeName);
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						if (testPayeeId) {
+							await api.init({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								dataDir: 'tests/dataDir',
+							});
+							await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+							await api.deletePayee(testPayeeId);
+							await api.shutdown();
+						}
+					}
+				});
+
+				it('get many payees', async () => {
+					const node = new ActualBudget();
+					let testPayeeId1: string | null = null;
+					let testPayeeId2: string | null = null;
+					const payeeName1 = `Get Many Payee 1 ${Date.now()}`;
+					const payeeName2 = `Get Many Payee 2 ${Date.now()}`;
+
+					try {
+						testPayeeId1 = await api.createPayee({ name: payeeName1 });
+						testPayeeId2 = await api.createPayee({ name: payeeName2 });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'getMany';
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(Array.isArray(result[0][0].json.data)).toBe(true);
+						const payees = result[0][0].json.data;
+						expect(payees.some((p: any) => p.id === testPayeeId1 && p.name === payeeName1)).toBe(true);
+						expect(payees.some((p: any) => p.id === testPayeeId2 && p.name === payeeName2)).toBe(true);
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						if (testPayeeId1) {
+							await api.deletePayee(testPayeeId1);
+						}
+						if (testPayeeId2) {
+							await api.deletePayee(testPayeeId2);
+						}
+						await api.shutdown();
+					}
+				});
+
+				it('delete a payee', async () => {
+					const node = new ActualBudget();
+					let testPayeeId: string | null = null;
+					const payeeName = `Delete Payee ${Date.now()}`;
+
+					try {
+						testPayeeId = await api.createPayee({ name: payeeName });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'delete';
+								if (name === 'payeeId') return testPayeeId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data.success).toBe(true);
+
+						// Verify the payee was deleted
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						const payees = await api.getPayees();
+						const deletedPayee = payees.find(p => p.id === testPayeeId);
+						expect(deletedPayee).toBeUndefined();
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					}
+				});
+
+				it('merge payees', async () => {
+					const node = new ActualBudget();
+					let sourcePayeeId: string | null = null;
+					let targetPayeeId: string | null = null;
+					const sourcePayeeName = `Source Payee ${Date.now()}`;
+					const targetPayeeName = `Target Payee ${Date.now()}`;
+
+					try {
+						sourcePayeeId = await api.createPayee({ name: sourcePayeeName });
+						targetPayeeId = await api.createPayee({ name: targetPayeeName });
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'merge';
+								if (name === 'payeeId') return sourcePayeeId;
+								if (name === 'targetPayeeId') return targetPayeeId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(result[0][0].json.data.success).toBe(true);
+
+						// Verify source payee is deleted and target payee still exists
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						const payees = await api.getPayees();
+						const deletedPayee = payees.find(p => p.id === sourcePayeeId);
+						const existingPayee = payees.find(p => p.id === targetPayeeId);
+						expect(deletedPayee).toBeUndefined();
+						expect(existingPayee).toBeDefined();
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						if (targetPayeeId) {
+							await api.deletePayee(targetPayeeId);
+						}
+						await api.shutdown();
+					}
+				});
+
+				it('get payee rules', async () => {
+					const node = new ActualBudget();
+					let testPayeeId: string | null = null;
+					let testRuleId: string | null = null;
+					let testCategoryId: string | null = null;
+					let testGroupId: string | null = null;
+					const payeeName = `Payee With Rules ${Date.now()}`;
+
+					try {
+						testPayeeId = await api.createPayee({ name: payeeName });
+
+						const groupName = `Test Group for Payee Rule ${Date.now()}`;
+						testGroupId = await api.createCategoryGroup({ name: groupName });
+						const categoryName = `Test Category for Payee Rule ${Date.now()}`;
+						testCategoryId = await api.createCategory({ name: categoryName, group_id: testGroupId as string });
+
+						const rule = {
+							stage: null,
+							conditionsOp: 'and',
+							conditions: [{ field: 'payee', op: 'is', value: testPayeeId }],
+							actions: [{ field: 'category', op: 'set', value: testCategoryId }],
+						};
+
+						const createdRule = await api.createRule(rule);
+						testRuleId = createdRule.id;
+
+						const executeFunctions = {
+							getCredentials: jest.fn().mockResolvedValue({
+								serverURL: process.env.ACTUAL_SERVER_URL,
+								password: process.env.ACTUAL_SERVER_PASSWORD,
+								syncId: process.env.ACTUAL_SYNC_ID,
+							}),
+							getNode: jest.fn(),
+							getNodeParameter: jest.fn((name: string) => {
+								if (name === 'resource') return 'payee';
+								if (name === 'operation') return 'getRules';
+								if (name === 'payeeId') return testPayeeId;
+								return null;
+							}),
+							getInputData: jest.fn().mockReturnValue([
+								{},
+							]),
+							helpers: {
+								returnJsonArray: jest.fn((data) => data),
+							},
+							continueOnFail: jest.fn().mockReturnValue(false),
+						} as unknown as IExecuteFunctions;
+
+						const result = await node.execute.call(executeFunctions);
+						expect(Array.isArray(result[0][0].json.data)).toBe(true);
+						expect(result[0][0].json.data.some((r: any) => r.id === testRuleId)).toBe(true);
+
+					} catch (error) {
+						if (error instanceof NodeApiError) {
+							const errorMessage = (error.cause as Error)?.message || error.message;
+							console.error('Caught NodeApiError:', errorMessage);
+						} else {
+							console.error('Caught unexpected error:', error);
+						}
+						throw error;
+					} finally {
+						await api.init({
+							serverURL: process.env.ACTUAL_SERVER_URL,
+							password: process.env.ACTUAL_SERVER_PASSWORD,
+							dataDir: 'tests/dataDir',
+						});
+						await api.downloadBudget(process.env.ACTUAL_SYNC_ID as string);
+						if (testRuleId) {
+							await api.deleteRule(testRuleId);
+						}
+						if (testCategoryId) {
+							await api.deleteCategory(testCategoryId);
+						}
+						if (testGroupId) {
+							await api.deleteCategoryGroup(testGroupId);
+						}
+						if (testPayeeId) {
+							await api.deletePayee(testPayeeId);
+						}
+						await api.shutdown();
 					}
 				});
 			});
