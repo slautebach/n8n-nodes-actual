@@ -1340,8 +1340,10 @@ export class ActualBudget implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', i) as string;
 			const operation = this.getNodeParameter('operation', i) as string;
+			const budgetId = this.getNodeParameter('budgetId', i) as string;
 
 			await ActualBudget.initApiClient.call(this);
+			await api.downloadBudget(budgetId);
 
 			try {
 				let result: any;
@@ -1404,8 +1406,6 @@ export class ActualBudget implements INodeType {
 								result = { success: true };
 								break;
 							case 'load':
-								const budgetIdForLoad = this.getNodeParameter('budgetId', i) as string;
-								await api.downloadBudget(budgetIdForLoad);
 								result = { success: true };
 								break;
 							case 'download':
